@@ -33,14 +33,15 @@
   <script>
     // Your web app's Firebase configuration
     const firebaseConfig = {
-  apiKey: "AIzaSyCHZV_2DcwCE0aeXkZYniEwcRLKR_-_xLk",
-  authDomain: "career-fair-cart-checker.firebaseapp.com",
-  projectId: "career-fair-cart-checker",
-  storageBucket: "career-fair-cart-checker.appspot.com",
-  messagingSenderId: "875583956496",
-  appId: "1:875583956496:web:7ff244650d681f957a0c95",
-  measurementId: "G-7FPCLZM9C8"
-};   
+      apiKey: "AIzaSyCHZV_2DcwCE0aeXkZYniEwcRLKR_-_xLk",
+      authDomain: "career-fair-cart-checker.firebaseapp.com",
+      projectId: "career-fair-cart-checker",
+      storageBucket: "career-fair-cart-checker.appspot.com",
+      messagingSenderId: "875583956496",
+      appId: "1:875583956496:web:7ff244650d681f957a0c95",
+      measurementId: "G-7FPCLZM9C8"
+    };   
+
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     var database = firebase.database();
@@ -92,6 +93,18 @@
       });
     }
 
+    // Function to reset tasks
+    function resetTasks() {
+      // Clear the table
+      const tableBody = document.getElementById('taskTable');
+      while (tableBody.firstChild) {
+        tableBody.removeChild(tableBody.firstChild);
+      }
+
+      // Clear the Firebase database
+      database.ref('tasks').remove();
+    }
+
     // Listen for tasks being added/updated in Firebase
     database.ref('tasks').on('child_added', (snapshot) => {
       const taskId = snapshot.key;
@@ -131,6 +144,8 @@
   <input type="text" id="tableNumber" placeholder="Table #">
   <input type="text" id="cartSize" placeholder="Cart Size">
   <button onclick="addTask()">Add Task</button>
+  
+  <button onclick="resetTasks()">Reset Tasks</button> <!-- Reset button added here -->
 
 </body>
 </html>
