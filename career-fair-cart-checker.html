@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career Fair Cart Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr.complete {
+      background-color: #d4edda;
+    }
+    button {
+      padding: 5px 10px;
+      margin-top: 10px;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+  apiKey: "AIzaSyCHZV_2DcwCE0aeXkZYniEwcRLKR_-_xLk",
+  authDomain: "career-fair-cart-checker.firebaseapp.com",
+  projectId: "career-fair-cart-checker",
+  storageBucket: "career-fair-cart-checker.appspot.com",
+  messagingSenderId: "875583956496",
+  appId: "1:875583956496:web:7ff244650d681f957a0c95",
+  measurementId: "G-7FPCLZM9C8"
+};   
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    function addTaskToTable(taskId, taskData) {
+      const row = document.createElement('tr');
+      row.setAttribute('id', taskId); // Set the row id to taskId
+      row.classList.toggle('complete', taskData.completed);
+
+      row.innerHTML = `
+        <td>${taskData.company}</td>
+        <td>${taskData.tableNumber}</td>
+        <td>${taskData.cartSize}</td>
+        <td><button onclick="toggleComplete('${taskId}')">${taskData.completed ? 'Undo' : 'Complete'}</button></td>
+      `;
+      document.getElementById('taskTable').appendChild(row);
+    }
+
+    // Function to add a new task
+    function addTask() {
+      const company = document.getElementById('company').value;
+      const tableNumber = document.getElementById('tableNumber').value;
+      const cartSize = document.getElementById('cartSize').value;
+
+      if (company && tableNumber && cartSize) {
+        // Add task to Firebase
+        const newTaskRef = database.ref('tasks').push({
+          company,
+          tableNumber,
+          cartSize,
+          completed: false
+        });
+
+        // Clear the input fields
+        document.getElementById('company').value = '';
+        document.getElementById('tableNumber').value = '';
+        document.getElementById('cartSize').value = '';
+      } else {
+        alert('Please fill in all fields.');
+      }
+    }
+
+    // Function to mark task as complete/incomplete
+    function toggleComplete(taskId) {
+      const taskRef = database.ref('tasks/' + taskId);
+      taskRef.once('value').then((snapshot) => {
+        const task = snapshot.val();
+        taskRef.update({ completed: !task.completed });
+      });
+    }
+
+    // Listen for tasks being added/updated in Firebase
+    database.ref('tasks').on('child_added', (snapshot) => {
+      const taskId = snapshot.key;
+      const taskData = snapshot.val();
+      addTaskToTable(taskId, taskData);
+    });
+
+    database.ref('tasks').on('child_changed', (snapshot) => {
+      const taskId = snapshot.key;
+      const taskData = snapshot.val();
+      const row = document.getElementById(taskId);
+      row.classList.toggle('complete', taskData.completed);
+      row.querySelector('button').innerText = taskData.completed ? 'Undo' : 'Complete';
+    });
+  </script>
+</head>
+<body>
+
+  <h1>Career Fair Cart Checker</h1>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Table #</th>
+        <th>Cart Size</th>
+        <th>Complete</th>
+      </tr>
+    </thead>
+    <tbody id="taskTable">
+      <!-- Tasks will be inserted here dynamically -->
+    </tbody>
+  </table>
+
+  <h2>Add New Task</h2>
+  <input type="text" id="company" placeholder="Company">
+  <input type="text" id="tableNumber" placeholder="Table #">
+  <input type="text" id="cartSize" placeholder="Cart Size">
+  <button onclick="addTask()">Add Task</button>
+
+</body>
+</html>
+
+
+
